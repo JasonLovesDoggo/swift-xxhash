@@ -1,0 +1,14 @@
+#!/bin/zsh
+# Replaces Sources/CXXHash with an official xxHash release, unmodified.
+#   scripts/update-xxhash v0.8.4
+set -euo pipefail
+tag=${1:?usage: scripts/update-xxhash <tag, e.g. v0.8.4>}
+here=${0:A:h:h}
+tmp=$(mktemp -d); trap 'rm -rf $tmp' EXIT
+curl -fsSL "https://github.com/Cyan4973/xxHash/archive/refs/tags/$tag.tar.gz" | tar xz -C $tmp
+src=$tmp/xxHash-${tag#v}
+cp $src/xxhash.h $here/Sources/CXXHash/include/xxhash.h
+cp $src/xxhash.c $here/Sources/CXXHash/xxhash.c
+cp $src/LICENSE $here/Sources/CXXHash/LICENSE
+print $tag > $here/Sources/CXXHash/VERSION
+print "Sources/CXXHash is now xxHash $tag. Update the expected values in Tests/ if they changed (they shouldn't), then run swift test."
